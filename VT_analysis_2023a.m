@@ -6,11 +6,11 @@ clear all; close all; tic;
 set(0, 'DefaultFigureRenderer', 'painters'); % forcing matlab to use painter for renderer to keep svgs as vectors, not bitmaps
 
 %% Information about the experiment
-genox.genotype_filename = '221102_32_33_genotype_2.txt'; % the name of the genotype file
-genox.data_filename = '221102_32_33_c1357oX_5mM_MTZ_UTF8_DATA_middur_TRIMMED.txt'; % the name of the data file
+genox.genotype_filename = '230515_32_33_genotype_2.txt'; % the name of the genotype file
+genox.data_filename = '230515_32_33_0-25_JNJ_prediss_sealed_4dpf_UTF8_DATA_middur_TRIMMED.txt'; % the name of the data file
 genox.number_of_days = 2; % how many days to generate column data for
 genox.cutoff = 0.5; % based on the sensitivity of the videotrackers
-genox.experiment = strcat(' 221102 VTs 32 and 33 tph2:gal4(HB);uas:nfsb-mCherry TRIMMED - cutoff = ', num2str(genox.cutoff)); % name of experiment
+genox.experiment = strcat(' 230515 VTs 32 and 33 - 25uM JNJ - 4dpf, prediss, sealed - TRIMMED - cutoff = ', num2str(genox.cutoff)); % name of experiment
 
 %% Import the genotype and data files
 dataset = importdata(strcat('../matlab_data_processed/', genox.data_filename), '\t', 1);
@@ -154,7 +154,7 @@ end
 for i =  1:genox.number_of_genos % loop through the genotypes
     for j = 1:length(genox.avewaking{i}(1,1:end)) % within genos loop through fish/columns
         for q=10:10:length(genox.avewaking{i})
-            genox.avewakechart_10min{i}(q/10,j)=nanmean(genox.avewaking{i}(q-9:q,j));
+            genox.avewakechart_10min{i}(q/10,j)=mean(genox.avewaking{i}(q-9:q,j),"omitnan");
         end
     end
 end
@@ -163,7 +163,7 @@ end
 for i =  1:genox.number_of_genos % loop through the genotypes
     for j = 1:length(genox.avewaking{i}(1,1:end)) % within genos loop through fish/columns
         for q=60:60:length(genox.avewaking{i})
-            genox.avewakechart1h{i}(q/60,j) = nanmean(genox.avewaking{i}(q-59:q,j));
+            genox.avewakechart1h{i}(q/60,j) = mean(genox.avewaking{i}(q-59:q,j),"omitnan");
         end
     end
 end
@@ -370,8 +370,8 @@ for i=1:genox.number_of_genos % loop through all the genotypes i
         
         % Average Activity for each fish for each day and night
         % (This is per minute since we use minute bins; multiply with 60 and you get the Hourly Activity; not really used): 
-        genox.summarytable.averageActivity.day{i}(j,k)=nanmean(genox.data{i}(intersect(find(genox.daynumber == j),find(genox.lightschedule == 0)),k));
-        genox.summarytable.averageActivity.night{i}(j,k)=nanmean(genox.data{i}(intersect(find(genox.daynumber == j),find(genox.lightschedule == 1)),k));
+        genox.summarytable.averageActivity.day{i}(j,k)=mean(genox.data{i}(intersect(find(genox.daynumber == j),find(genox.lightschedule == 0)),k),"omitnan");
+        genox.summarytable.averageActivity.night{i}(j,k)=mean(genox.data{i}(intersect(find(genox.daynumber == j),find(genox.lightschedule == 1)),k),"omitnan");
                 
         % Total Activity for each fish for each day and night
         % Use find with genox.daynumber and genox.lightschedule to define the relevant segment of the genox.data, then use 'sum'
@@ -394,8 +394,8 @@ for i=1:genox.number_of_genos % loop through all the genotypes i
                        
         % Average Waking Activity for each fish for each day and night
         % Use find with genox.daynumber and genox.lightschedule to define the relevant segment of the genox.data, then use 'nanmean'
-        genox.summarytable.averageWaking.day{i}(j,k)=nanmean(genox.avewaking{i}(intersect(find(genox.daynumber == j),find(genox.lightschedule == 0)),k));
-        genox.summarytable.averageWaking.night{i}(j,k)=nanmean(genox.avewaking{i}(intersect(find(genox.daynumber == j),find(genox.lightschedule == 1)),k));
+        genox.summarytable.averageWaking.day{i}(j,k)=mean(genox.avewaking{i}(intersect(find(genox.daynumber == j),find(genox.lightschedule == 0)),k),"omitnan");
+        genox.summarytable.averageWaking.night{i}(j,k)=mean(genox.avewaking{i}(intersect(find(genox.daynumber == j),find(genox.lightschedule == 1)),k),"omitnan");
         end
     end
     
@@ -409,20 +409,20 @@ for i=1:genox.number_of_genos % loop through all the genotypes i
             genox.summarytable.sleep.daytotal{i}(p) = sum(genox.summarytable.sleep.day{i}(1:end,p));
             genox.summarytable.sleep.nighttotal{i}(p) = sum(genox.summarytable.sleep.night{i}(1:end,p));            
             % mean # of bouts for each fiss in day/night (1, #of fish)
-            genox.summarytable.sleepBout.daymean{i}(p) = nanmean(genox.summarytable.sleepBout.day{i}(1:end,p));
-            genox.summarytable.sleepBout.nightmean{i}(p) = nanmean(genox.summarytable.sleepBout.night{i}(1:end,p));            
+            genox.summarytable.sleepBout.daymean{i}(p) = mean(genox.summarytable.sleepBout.day{i}(1:end,p),"omitnan");
+            genox.summarytable.sleepBout.nightmean{i}(p) = mean(genox.summarytable.sleepBout.night{i}(1:end,p),"omitnan");            
             % mean bout sleepLength for each fish in day/night (1, #of fish)
-            genox.summarytable.sleepLength.daymean{i}(p) = nanmean(genox.summarytable.sleepLength.day{i}(1:end,p));
-            genox.summarytable.sleepLength.nightmean{i}(p) = nanmean(genox.summarytable.sleepLength.night{i}(1:end,p));             
+            genox.summarytable.sleepLength.daymean{i}(p) = mean(genox.summarytable.sleepLength.day{i}(1:end,p),"omitnan");
+            genox.summarytable.sleepLength.nightmean{i}(p) = mean(genox.summarytable.sleepLength.night{i}(1:end,p),"omitnan");             
             % mean latency for each fish in day/night(1, #of fish)
-            genox.summarytable.sleepLatency.daymean{i}(p) = nanmean(genox.summarytable.sleepLatency.day{i}(1:end,p));
-            genox.summarytable.sleepLatency.nightmean{i}(p) = nanmean(genox.summarytable.sleepLatency.night{i}(1:end,p));             
+            genox.summarytable.sleepLatency.daymean{i}(p) = mean(genox.summarytable.sleepLatency.day{i}(1:end,p),"omitnan");
+            genox.summarytable.sleepLatency.nightmean{i}(p) = mean(genox.summarytable.sleepLatency.night{i}(1:end,p),"omitnan");             
             % mean activity for each fish in day/night (1, #of fish)
-            genox.summarytable.averageActivity.daymean{i}(p) = nanmean(genox.summarytable.averageActivity.day{i}(1:end,p));
-            genox.summarytable.averageActivity.nightmean{i}(p) = nanmean(genox.summarytable.averageActivity.night{i}(1:end,p));            
+            genox.summarytable.averageActivity.daymean{i}(p) = mean(genox.summarytable.averageActivity.day{i}(1:end,p),"omitnan");
+            genox.summarytable.averageActivity.nightmean{i}(p) = mean(genox.summarytable.averageActivity.night{i}(1:end,p),"omitnan");            
             % mean waking activity for each fish in day/night (1, #of fish)
-            genox.summarytable.averageWaking.daymean{i}(p) = nanmean(genox.summarytable.averageWaking.day{i}(1:end,p));
-            genox.summarytable.averageWaking.nightmean{i}(p) = nanmean(genox.summarytable.averageWaking.night{i}(1:end,p));
+            genox.summarytable.averageWaking.daymean{i}(p) = mean(genox.summarytable.averageWaking.day{i}(1:end,p),"omitnan");
+            genox.summarytable.averageWaking.nightmean{i}(p) = mean(genox.summarytable.averageWaking.night{i}(1:end,p),"omitnan");
        end
 end
 
@@ -564,54 +564,54 @@ end
 %% Make Z-score summary
 for j = 1:genox.number_of_days % for each day you care about
     for i = 1:genox.number_of_genos % for each genotype
-        blah = (genox.summary.hourly_activity.day{j}(:, i) - nanmean(genox.summary.hourly_activity.day{j}(:, 1)))...
-            /nanstd(genox.summary.hourly_activity.day{j}(:, 1));
+        blah = (genox.summary.hourly_activity.day{j}(:, i) - mean(genox.summary.hourly_activity.day{j}(:, 1),"omitnan"))...
+            /std(genox.summary.hourly_activity.day{j}(:, 1),"omitnan");
         genox.Zsummary.hourly_activity.day{j}(1:length(blah),i) = blah;   
 % grab the metric from table, then Z-score it and assign to blah
 % then assign blah to the appropriate slot in genox.Zsummary
 
-        blah = (genox.summary.hourly_activity.night{j}(:, i) - nanmean(genox.summary.hourly_activity.night{j}(:, 1)))...
-            /nanstd(genox.summary.hourly_activity.night{j}(:, 1));
+        blah = (genox.summary.hourly_activity.night{j}(:, i) - mean(genox.summary.hourly_activity.night{j}(:, 1),"omitnan"))...
+            /std(genox.summary.hourly_activity.night{j}(:, 1),"omitnan");
         genox.Zsummary.hourly_activity.night{j}(1:length(blah),i) = blah;   
 
-        blah = (genox.summary.waking_activity.day{j}(:, i) - nanmean(genox.summary.waking_activity.day{j}(:, 1)))...
-            /nanstd(genox.summary.waking_activity.day{j}(:, 1));
+        blah = (genox.summary.waking_activity.day{j}(:, i) - mean(genox.summary.waking_activity.day{j}(:, 1),"omitnan"))...
+            /std(genox.summary.waking_activity.day{j}(:, 1),"omitnan");
         genox.Zsummary.waking_activity.day{j}(1:length(blah),i) = blah;   
 
-        blah = (genox.summary.waking_activity.night{j}(:, i) - nanmean(genox.summary.waking_activity.night{j}(:, 1)))...
-            /nanstd(genox.summary.waking_activity.night{j}(:, 1));
+        blah = (genox.summary.waking_activity.night{j}(:, i) - mean(genox.summary.waking_activity.night{j}(:, 1),"omitnan"))...
+            /std(genox.summary.waking_activity.night{j}(:, 1),"omitnan");
         genox.Zsummary.waking_activity.night{j}(1:length(blah),i) = blah;   
 
-        blah = (genox.summary.hourly_sleep.day{j}(:, i) - nanmean(genox.summary.hourly_sleep.day{j}(:, 1)))...
-            /nanstd(genox.summary.hourly_sleep.day{j}(:, 1));
+        blah = (genox.summary.hourly_sleep.day{j}(:, i) - mean(genox.summary.hourly_sleep.day{j}(:, 1),"omitnan"))...
+            /std(genox.summary.hourly_sleep.day{j}(:, 1),"omitnan");
         genox.Zsummary.hourly_sleep.day{j}(1:length(blah),i) = blah; 
 
-        blah = (genox.summary.hourly_sleep.night{j}(:, i) - nanmean(genox.summary.hourly_sleep.night{j}(:, 1)))...
-            /nanstd(genox.summary.hourly_sleep.night{j}(:, 1));
+        blah = (genox.summary.hourly_sleep.night{j}(:, i) - mean(genox.summary.hourly_sleep.night{j}(:, 1),"omitnan"))...
+            /std(genox.summary.hourly_sleep.night{j}(:, 1),"omitnan");
         genox.Zsummary.hourly_sleep.night{j}(1:length(blah),i) = blah; 
 
-        blah = (genox.summary.hourly_sleep_bout_number.day{j}(:, i) - nanmean(genox.summary.hourly_sleep_bout_number.day{j}(:, 1)))...
-            /nanstd(genox.summary.hourly_sleep_bout_number.day{j}(:, 1));
+        blah = (genox.summary.hourly_sleep_bout_number.day{j}(:, i) - mean(genox.summary.hourly_sleep_bout_number.day{j}(:, 1),"omitnan"))...
+            /std(genox.summary.hourly_sleep_bout_number.day{j}(:, 1),"omitnan");
         genox.Zsummary.hourly_sleep_bout_number.day{j}(1:length(blah),i) = blah; 
 
-        blah = (genox.summary.hourly_sleep_bout_number.night{j}(:, i) - nanmean(genox.summary.hourly_sleep_bout_number.night{j}(:, 1)))...
-            /nanstd(genox.summary.hourly_sleep_bout_number.night{j}(:, 1));
+        blah = (genox.summary.hourly_sleep_bout_number.night{j}(:, i) - mean(genox.summary.hourly_sleep_bout_number.night{j}(:, 1),"omitnan"))...
+            /std(genox.summary.hourly_sleep_bout_number.night{j}(:, 1),"omitnan");
         genox.Zsummary.hourly_sleep_bout_number.night{j}(1:length(blah),i) = blah;
 
-        blah = (genox.summary.average_sleep_bout_length.day{j}(:, i) - nanmean(genox.summary.average_sleep_bout_length.day{j}(:, 1)))...
-            /nanstd(genox.summary.average_sleep_bout_length.day{j}(:, 1));
+        blah = (genox.summary.average_sleep_bout_length.day{j}(:, i) - mean(genox.summary.average_sleep_bout_length.day{j}(:, 1),"omitnan"))...
+            /std(genox.summary.average_sleep_bout_length.day{j}(:, 1),"omitnan");
         genox.Zsummary.average_sleep_bout_length.day{j}(1:length(blah),i) = blah;
 
-        blah = (genox.summary.average_sleep_bout_length.night{j}(:, i) - nanmean(genox.summary.average_sleep_bout_length.night{j}(:, 1)))...
-            /nanstd(genox.summary.average_sleep_bout_length.night{j}(:, 1));
+        blah = (genox.summary.average_sleep_bout_length.night{j}(:, i) - mean(genox.summary.average_sleep_bout_length.night{j}(:, 1),"omitnan"))...
+            /std(genox.summary.average_sleep_bout_length.night{j}(:, 1),"omitnan");
         genox.Zsummary.average_sleep_bout_length.night{j}(1:length(blah),i) = blah;
 
-        blah = (genox.summary.sleep_latency.day{j}(:, i) - nanmean(genox.summary.sleep_latency.day{j}(:, 1)))...
-            /nanstd(genox.summary.sleep_latency.day{j}(:, 1));
+        blah = (genox.summary.sleep_latency.day{j}(:, i) - mean(genox.summary.sleep_latency.day{j}(:, 1),"omitnan"))...
+            /std(genox.summary.sleep_latency.day{j}(:, 1),"omitnan");
         genox.Zsummary.sleep_latency.day{j}(1:length(blah),i) = blah;
 
-        blah = (genox.summary.sleep_latency.night{j}(:, i) - nanmean(genox.summary.sleep_latency.night{j}(:, 1)))...
-            /nanstd(genox.summary.sleep_latency.night{j}(:, 1));
+        blah = (genox.summary.sleep_latency.night{j}(:, i) - mean(genox.summary.sleep_latency.night{j}(:, 1),"omitnan"))...
+            /std(genox.summary.sleep_latency.night{j}(:, 1),"omitnan");
         genox.Zsummary.sleep_latency.night{j}(1:length(blah),i) = blah;
     end
 
